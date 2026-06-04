@@ -1,0 +1,9 @@
+.DS_Store
+/bin/
+/tmp/
+*.test
+*.out
+*.exe
+.env
+.env.local
+__debug_bin*
