@@ -8,12 +8,12 @@ import (
 
 // Error code constants used in API error responses.
 const (
-	CodeValidation  = "VALIDATION"
-	CodeNotFound    = "NOT_FOUND"
+	CodeValidation   = "VALIDATION"
+	CodeNotFound     = "NOT_FOUND"
 	CodeUnauthorized = "UNAUTHORIZED"
-	CodeForbidden   = "FORBIDDEN"
-	CodeRateLimited = "RATE_LIMITED"
-	CodeInternal    = "INTERNAL"
+	CodeForbidden    = "FORBIDDEN"
+	CodeRateLimited  = "RATE_LIMITED"
+	CodeInternal     = "INTERNAL"
 )
 
 type envelope struct {

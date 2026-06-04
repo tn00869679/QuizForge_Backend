@@ -4,11 +4,11 @@ import "os"
 
 // Config holds all application configuration loaded from environment variables.
 type Config struct {
-	DatabaseURL     string
-	Port            string
-	AdminToken      string
-	ExamHMACSecret  string
-	CORSOrigins     string
+	DatabaseURL    string
+	Port           string
+	AdminToken     string
+	ExamHMACSecret string
+	CORSOrigins    string
 }
 
 // Load reads configuration from environment variables, using defaults for dev.

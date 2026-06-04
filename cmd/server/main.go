@@ -51,8 +51,14 @@ func main() {
 		handler.Ok(c, gin.H{"status": "ok"})
 	})
 
-	// Business endpoints are added in subsequent segments.
-	r.Group("/api/v1")
+	v1 := r.Group("/api/v1")
+	handlers := handler.New(handler.Deps{Pool: pool, Cfg: cfg})
+	handlers.RegisterRoutes(
+		v1,
+		middleware.UserStub(),
+		middleware.RequireAdmin(cfg.AdminToken),
+		middleware.RateLimit(rate.Limit(1), 5),
+	)
 
 	srv := &http.Server{
 		Addr:    ":" + cfg.Port,

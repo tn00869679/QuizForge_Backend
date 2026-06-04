@@ -1,0 +1,67 @@
+{
+  "category_code": "02",
+  "category_name": "證券商業務員",
+  "category_description": "證基會證券商業務員測驗",
+  "questions": [
+    {
+      "year": 114,
+      "term": 3,
+      "session_label": "114年第3次",
+      "source_url": "https://examweb.sfi.org.tw/Download/02/02.pdf",
+      "subject": "證券交易相關法規與實務",
+      "subject_order": 1,
+      "number": 1,
+      "stem": "依證券交易法規定，下列何者為有價證券？",
+      "options": [
+        {"key": "A", "text": "政府債券"},
+        {"key": "B", "text": "公司股票"},
+        {"key": "C", "text": "公司債券"},
+        {"key": "D", "text": "以上皆是"}
+      ],
+      "answer": "D",
+      "explanation": "證券交易法第6條規定政府債券、公司股票、公司債券均屬有價證券。",
+      "tags": ["法規", "有價證券"],
+      "difficulty": 1
+    },
+    {
+      "year": 114,
+      "term": 3,
+      "session_label": "114年第3次",
+      "source_url": "https://examweb.sfi.org.tw/Download/02/02.pdf",
+      "subject": "證券交易相關法規與實務",
+      "subject_order": 1,
+      "number": 2,
+      "stem": "證券商須經下列何者核准始得營業？",
+      "options": [
+        {"key": "A", "text": "金融監督管理委員會"},
+        {"key": "B", "text": "中央銀行"},
+        {"key": "C", "text": "經濟部"},
+        {"key": "D", "text": "臺灣證券交易所"}
+      ],
+      "answer": "A",
+      "explanation": "證券商之設立應經金融監督管理委員會核准。",
+      "tags": ["法規"],
+      "difficulty": 2
+    },
+    {
+      "year": 114,
+      "term": 3,
+      "session_label": "114年第3次",
+      "source_url": "https://examweb.sfi.org.tw/Download/02/02.pdf",
+      "subject": "證券投資與財務分析",
+      "subject_order": 2,
+      "number": 1,
+      "stem": "本益比（P/E ratio）係指下列何者之比率？",
+      "options": [
+        {"key": "A", "text": "每股盈餘除以股價"},
+        {"key": "B", "text": "股價除以每股盈餘"},
+        {"key": "C", "text": "股價除以每股淨值"},
+        {"key": "D", "text": "每股股利除以股價"}
+      ],
+      "answer": "B",
+      "explanation": "本益比＝股價／每股盈餘（EPS）。",
+      "tags": ["財務分析"],
+      "difficulty": 1
+    }
+  ]
+}
