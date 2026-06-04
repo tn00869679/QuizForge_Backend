@@ -53,6 +53,101 @@ func (s *Questions) GetByID(ctx context.Context, id int64) (model.Question, erro
 	return out, nil
 }
 
+// SampledQuestion is one row of an exam draw: the question plus its subject name
+// (which the public question DTO does not carry but exam/start needs for the
+// per-subject breakdown).
+type SampledQuestion struct {
+	Question model.Question
+	Subject  string
+}
+
+// SampleByCategory draws up to perSubjectN active questions at random from each
+// subject of a category and returns them grouped, subject by subject, in subject
+// order_index/name order. Within a subject the rows are random. It is the
+// sampling primitive behind exam/start.
+//
+// The per-subject limit is applied with a LATERAL subquery so a single round
+// trip yields exactly the exam set. Subjects with no active questions are
+// skipped (they contribute nothing to the exam).
+func (s *Questions) SampleByCategory(ctx context.Context, categoryID int64, perSubjectN int) ([]SampledQuestion, error) {
+	const q = `
+		SELECT ` + questionColumns + `, s.name
+		FROM subjects s
+		JOIN LATERAL (
+			SELECT * FROM questions qi
+			WHERE qi.subject_id = s.id AND qi.is_active = true
+			ORDER BY random()
+			LIMIT $2
+		) q ON true
+		WHERE s.category_id = $1
+		ORDER BY s.order_index, s.name, random()`
+	rows, err := s.pool.Query(ctx, q, categoryID, perSubjectN)
+	if err != nil {
+		return nil, fmt.Errorf("store.Questions.SampleByCategory: query: %w", err)
+	}
+	defer rows.Close()
+
+	out := make([]SampledQuestion, 0)
+	for rows.Next() {
+		var qn model.Question
+		var subject string
+		if err := rows.Scan(
+			&qn.ID, &qn.SubjectID, &qn.ExamSessionID, &qn.Number, &qn.Stem, &qn.Options,
+			&qn.Answer, &qn.Explanation, &qn.Tags, &qn.Difficulty, &qn.IsActive, &qn.CreatedAt, &qn.UpdatedAt,
+			&subject,
+		); err != nil {
+			return nil, fmt.Errorf("store.Questions.SampleByCategory: scan: %w", err)
+		}
+		out = append(out, SampledQuestion{Question: qn, Subject: subject})
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("store.Questions.SampleByCategory: rows: %w", err)
+	}
+	return out, nil
+}
+
+// GradingRow carries the answer key for one question, used by exam grading to
+// compute correctness and reveal the solution. Subject is the subject name (for
+// the per-subject breakdown).
+type GradingRow struct {
+	ID          int64
+	Number      int
+	SubjectID   int64
+	Subject     string
+	Answer      string
+	Explanation string
+}
+
+// GradingByIDs returns the grading rows for the given question ids (active or
+// not — an exam token may outlive a deactivation). Missing ids are simply
+// absent from the result; callers decide how to treat them. The returned map is
+// keyed by question id.
+func (s *Questions) GradingByIDs(ctx context.Context, ids []int64) (map[int64]GradingRow, error) {
+	const q = `
+		SELECT q.id, q.number, q.subject_id, s.name, q.answer, q.explanation
+		FROM questions q
+		JOIN subjects s ON s.id = q.subject_id
+		WHERE q.id = ANY($1)`
+	rows, err := s.pool.Query(ctx, q, ids)
+	if err != nil {
+		return nil, fmt.Errorf("store.Questions.GradingByIDs: query: %w", err)
+	}
+	defer rows.Close()
+
+	out := make(map[int64]GradingRow, len(ids))
+	for rows.Next() {
+		var g GradingRow
+		if err := rows.Scan(&g.ID, &g.Number, &g.SubjectID, &g.Subject, &g.Answer, &g.Explanation); err != nil {
+			return nil, fmt.Errorf("store.Questions.GradingByIDs: scan: %w", err)
+		}
+		out[g.ID] = g
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("store.Questions.GradingByIDs: rows: %w", err)
+	}
+	return out, nil
+}
+
 // QueryFilter holds all supported filters for Questions.Query.
 type QueryFilter struct {
 	CategoryID *int64
@@ -77,7 +172,7 @@ type QueryFilter struct {
 //
 // status filtering joins the attempts table for filter.UserID:
 //   - unanswered: questions with no attempt row for the user
-//   - wrong:      the user's attempt has is_correct = false
+//   - wrong:      the user answered (selected IS NOT NULL) and is_correct = false
 //   - favorite:   the user's attempt has is_favorite = true
 //
 // A status filter without a UserID returns ErrStatusRequiresUser.
@@ -126,7 +221,7 @@ func (s *Questions) Query(ctx context.Context, f QueryFilter) ([]model.Question,
 	case "unanswered":
 		where = append(where, "NOT EXISTS (SELECT 1 FROM attempts a WHERE a.question_id = q.id AND a.user_id = "+next(*f.UserID)+")")
 	case "wrong":
-		where = append(where, "EXISTS (SELECT 1 FROM attempts a WHERE a.question_id = q.id AND a.user_id = "+next(*f.UserID)+" AND a.is_correct = false)")
+		where = append(where, "EXISTS (SELECT 1 FROM attempts a WHERE a.question_id = q.id AND a.user_id = "+next(*f.UserID)+" AND a.selected IS NOT NULL AND a.is_correct = false)")
 	case "favorite":
 		where = append(where, "EXISTS (SELECT 1 FROM attempts a WHERE a.question_id = q.id AND a.user_id = "+next(*f.UserID)+" AND a.is_favorite = true)")
 	case "":

@@ -56,6 +56,7 @@ func main() {
 	handlers.RegisterRoutes(
 		v1,
 		middleware.UserStub(),
+		middleware.RequireUser(),
 		middleware.RequireAdmin(cfg.AdminToken),
 		middleware.RateLimit(rate.Limit(1), 5),
 	)

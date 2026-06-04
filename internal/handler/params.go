@@ -9,6 +9,18 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// requireUserID returns the authenticated user id, writing a 401 and returning
+// ok=false when none is present. RequireUser middleware already guards the
+// status routes, so a missing id here is defense in depth rather than an
+// expected path.
+func requireUserID(c *gin.Context) (int64, bool) {
+	if id := userIDPtr(c); id != nil {
+		return *id, true
+	}
+	Fail(c, http.StatusUnauthorized, CodeUnauthorized, "authentication required")
+	return 0, false
+}
+
 const (
 	defaultPageSize = 20
 	maxPageSize     = 100
@@ -24,6 +36,10 @@ const (
 // allowedLimits is the whitelist of "this batch" question counts. 0 (mapped from
 // limit=all or absent) means paginate via page/page_size.
 var allowedLimits = map[int]struct{}{5: {}, 10: {}, 20: {}, 50: {}}
+
+// validAnswers is the set of accepted single-choice answer keys, used to
+// validate submitted selections.
+var validAnswers = map[string]struct{}{"A": {}, "B": {}, "C": {}, "D": {}}
 
 // failInternal logs the underlying error with the request id and returns a
 // generic 500 without leaking internals to the client.

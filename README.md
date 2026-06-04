@@ -108,38 +108,24 @@ apt-get install poppler-utils  # Debian/Ubuntu
 
 分頁參數：`page`（預設 1）、`page_size`（預設 20，上限 100）。
 
-### 已實作（M1）
+完整端點規格（query params、request body、response schema、error codes）見 [docs/API_REFERENCE.md](docs/API_REFERENCE.md)。
 
-| 方法 | 路徑 | 說明 |
-|------|------|------|
-| `GET` | `/health` | Health check |
-| `GET` | `/api/v1/categories` | 列出所有科目大類 |
-| `GET` | `/api/v1/categories/:id/subjects` | 列出指定大類下的科目 |
-| `GET` | `/api/v1/exam-sessions?category_id=` | 列出指定大類的考次 |
-| `GET` | `/api/v1/questions` | 查詢題目（支援 keyword / category_id / subject_id / session_ids / status / random / limit） |
-| `GET` | `/api/v1/questions/:id` | 取單題（`?include_answer=false` 可隱藏答案） |
-| `POST` | `/api/v1/admin/import` | 批次匯入題目（需 `X-Admin-Token`） |
-
-查詢參數說明（`GET /api/v1/questions`）：
-
-| 參數 | 說明 |
-|------|------|
-| `category_id` | 篩選大類 |
-| `subject_id` | 篩選科目（可重複或逗號分隔） |
-| `session_ids` | 篩選考次（可重複或逗號分隔） |
-| `keyword` | 關鍵字搜尋（題幹 ILIKE，配 pg_trgm GIN index） |
-| `status` | `unanswered` / `wrong` / `favorite`（需 `X-User-Id` header） |
-| `random` | `true` 隨機排序 |
-| `limit` | `5` / `10` / `20` / `50` / `all`；`all` 時走分頁 |
-
-### 後續計畫（尚未實作）
-
-| 方法 | 路徑 | 說明 |
-|------|------|------|
-| `POST` | `/api/v1/exam/start` | 開始模擬考（回傳 exam_token，題目不含答案） |
-| `POST` | `/api/v1/exam/grade` | 交卷評分（驗 HMAC token） |
-| `PATCH` | `/api/v1/attempts/:question_id` | 更新作答狀態（favorite / marked_uncertain） |
-| `GET` | `/api/v1/stats` | 使用者作答統計 |
+| 方法 | 路徑 | Auth | 說明 |
+|------|------|------|------|
+| `GET` | `/health` | 公開 | Health check |
+| `GET` | `/api/v1/categories` | 公開 | 列出所有科目大類 |
+| `GET` | `/api/v1/categories/:id/subjects` | 公開 | 列出指定大類下的科目 |
+| `GET` | `/api/v1/exam-sessions?category_id=` | 公開 | 列出指定大類的考次 |
+| `GET` | `/api/v1/questions` | 公開（status 篩選需 X-User-Id） | 查詢題目（keyword / category_id / subject_id / session_ids / status / random / limit） |
+| `GET` | `/api/v1/questions/:id` | 公開 | 取單題（`?include_answer=false` 可隱藏答案） |
+| `POST` | `/api/v1/practice/generate` | 公開（status 篩選需 X-User-Id） | 產生練習題 ID 清單 |
+| `POST` | `/api/v1/exam/start` | 公開 | 開始模擬考（回傳 exam_token，題目不含答案） |
+| `POST` | `/api/v1/exam/grade` | 公開 | 交卷評分（驗 HMAC token） |
+| `POST` | `/api/v1/attempts` | X-User-Id | 記錄作答（伺服器端判斷對錯） |
+| `PATCH` | `/api/v1/attempts/:question_id` | X-User-Id | 更新 favorite / is_marked_uncertain 旗標 |
+| `GET` | `/api/v1/attempts?status=` | X-User-Id | 複習清單（wrong / favorite / uncertain） |
+| `GET` | `/api/v1/stats` | X-User-Id | 使用者作答統計 |
+| `POST` | `/api/v1/admin/import` | X-Admin-Token | 批次匯入題目 |
 
 ## 環境變數
 
