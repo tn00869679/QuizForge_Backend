@@ -18,7 +18,7 @@ var ErrUnknownCategory = errors.New("service: category has no questions")
 // Default exam parameters, applied when the request omits them (zero value).
 const (
 	defaultPerSubjectN = 50
-	defaultDurationSec  = 7200
+	defaultDurationSec = 7200
 )
 
 // Exam serves exam/start (sampling + token issue) and exam/grade (verify +

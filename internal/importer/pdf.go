@@ -32,14 +32,14 @@ type rawQuestion struct {
 // ParsedQuestion is a single question ready to be serialised into the
 // IMPORT_FORMAT JSON. The NeedsReview flag is always true from this pipeline.
 type ParsedQuestion struct {
-	Number      int               `json:"number"`
-	Stem        string            `json:"stem"`
-	Options     []ParsedOption    `json:"options"`
-	Answer      string            `json:"answer"`       // filled by matchAnswers; may be empty
-	Explanation string            `json:"explanation"`  // always empty from PDF; fill manually
-	Tags        []string          `json:"tags"`
-	Difficulty  int               `json:"difficulty"`
-	NeedsReview bool              `json:"needs_review"` // always true; must be manually verified
+	Number      int                `json:"number"`
+	Stem        string             `json:"stem"`
+	Options     []ParsedOption     `json:"options"`
+	Answer      string             `json:"answer"`      // filled by matchAnswers; may be empty
+	Explanation string             `json:"explanation"` // always empty from PDF; fill manually
+	Tags        []string           `json:"tags"`
+	Difficulty  int                `json:"difficulty"`
+	NeedsReview bool               `json:"needs_review"` // always true; must be manually verified
 	Meta        ParsedQuestionMeta `json:"_meta"`
 }
 
@@ -51,9 +51,9 @@ type ParsedOption struct {
 
 // ParsedQuestionMeta records provenance for audit and manual review.
 type ParsedQuestionMeta struct {
-	SourceURL   string `json:"source_url"`
-	FetchedAt   string `json:"fetched_at"`
-	PageHint    int    `json:"page_hint"`    // page the question was found on; 0 if unknown
+	SourceURL string `json:"source_url"`
+	FetchedAt string `json:"fetched_at"`
+	PageHint  int    `json:"page_hint"` // page the question was found on; 0 if unknown
 }
 
 // PDFToText runs the external `pdftotext` command (poppler-utils) and returns

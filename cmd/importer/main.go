@@ -1,14 +1,16 @@
 // cmd/importer — QuizForge 匯入工具（兼任 seed loader）
 //
 // 子命令：
-//   importer seed  <file.json>         — 讀 IMPORT_FORMAT JSON，呼叫 service.Import.Apply 寫入 DB
-//   importer parse --questions <q.pdf> --answers <a.pdf> --out <out.json>
-//                                       — SKELETON：用 pdftotext 抽文字 → 切題 → 輸出待校對 JSON
+//
+//	importer seed  <file.json>         — 讀 IMPORT_FORMAT JSON，呼叫 service.Import.Apply 寫入 DB
+//	importer parse --questions <q.pdf> --answers <a.pdf> --out <out.json>
+//	                                    — SKELETON：用 pdftotext 抽文字 → 切題 → 輸出待校對 JSON
 //
 // SKELETON NOTE（parse 子命令）:
-//   本檔的 parse 功能為骨架，供說明整合流程之用。
-//   真實證基會 PDF 排版因年份不同而差異甚大，正則與切題邏輯需逐案人工調整。
-//   輸出 JSON 每題均標記 "needs_review": true，必須人工校對後方可透過 `seed` 子命令正式匯入。
+//
+//	本檔的 parse 功能為骨架，供說明整合流程之用。
+//	真實證基會 PDF 排版因年份不同而差異甚大，正則與切題邏輯需逐案人工調整。
+//	輸出 JSON 每題均標記 "needs_review": true，必須人工校對後方可透過 `seed` 子命令正式匯入。
 package main
 
 import (
@@ -213,13 +215,13 @@ type parsedOutput struct {
 	GeneratedAt string `json:"_generated_at"`
 	// CategoryCode / CategoryName / SessionLabel are placeholders;
 	// fill them in before running `importer seed`.
-	CategoryCode  string `json:"category_code"`
-	CategoryName  string `json:"category_name"`
-	SessionLabel  string `json:"session_label"`
-	Year          int    `json:"year"`
-	Term          int    `json:"term"`
-	SourceURL     string `json:"source_url"`
-	Subject       string `json:"subject"`
+	CategoryCode string `json:"category_code"`
+	CategoryName string `json:"category_name"`
+	SessionLabel string `json:"session_label"`
+	Year         int    `json:"year"`
+	Term         int    `json:"term"`
+	SourceURL    string `json:"source_url"`
+	Subject      string `json:"subject"`
 	// Questions is the list of extracted questions, each with needs_review:true.
 	Questions []importer.ParsedQuestion `json:"questions"`
 }
@@ -260,8 +262,8 @@ func runParse(args []string) error {
 	out := parsedOutput{
 		Note:         "SKELETON OUTPUT — 每題 needs_review:true，請人工校對後再以 `importer seed` 匯入",
 		GeneratedAt:  time.Now().UTC().Format(time.RFC3339),
-		CategoryCode: "02",          // SKELETON_TODO: fill in correct category
-		CategoryName: "（待填寫）",     // SKELETON_TODO: fill in correct category name
+		CategoryCode: "02",    // SKELETON_TODO: fill in correct category
+		CategoryName: "（待填寫）", // SKELETON_TODO: fill in correct category name
 		SessionLabel: f.sessionLabel,
 		Year:         f.year,
 		Term:         f.term,
