@@ -6,7 +6,7 @@ Go 微服務後端，提供證照題庫查詢、模擬考核心 API，以及管�
 
 | 元件 | 版本 / 說明 |
 |------|-------------|
-| Go | 1.22 |
+| Go | 1.25+（依 go.mod） |
 | Gin | HTTP 框架 |
 | PostgreSQL | 16，透過 docker-compose 提供 |
 | pgx/v5 | pgxpool 直接寫 SQL（無 ORM） |
@@ -101,6 +101,49 @@ apt-get install poppler-utils  # Debian/Ubuntu
 ```
 
 輸出 JSON 每題標記 `"needs_review": true`，**必須人工校對後**再以 `importer seed` 正式匯入。詳見 [docs/IMPORT_FORMAT.md](docs/IMPORT_FORMAT.md)。
+
+## 跑起整個系統（後端 + 前端）
+
+完整 app = 本後端 + [QuizForge_Frontend](https://github.com/tn00869679/QuizForge_Frontend)（React + Vite SPA）。兩者是獨立 repo，建議 clone 到同一個父資料夾：
+
+```
+your-workspace/
+├── QuizForge_Backend/      ← 本 repo（先啟動）
+└── QuizForge_Frontend/
+```
+
+```bash
+# 還沒 clone 前端的話：
+git clone git@github.com:tn00869679/QuizForge_Frontend.git
+# 或 HTTPS：git clone https://github.com/tn00869679/QuizForge_Frontend.git
+```
+
+**啟動順序（三個 terminal）：**
+
+```bash
+# T1 — DB + 後端 server（每步細節見上面「如何跑」）
+cd QuizForge_Backend && docker compose up -d && cp -n .env.example .env \
+  && export $(grep -v '^#' .env | xargs) && go run ./cmd/server
+
+# T2 — 匯入種子題庫（後端起來後跑一次即可）
+cd QuizForge_Backend && export $(grep -v '^#' .env | xargs) \
+  && go run ./cmd/importer seed seed/seed.json
+
+# T3 — 前端（需 Node 20+）
+cd QuizForge_Frontend && npm install && npm run dev
+```
+
+開瀏覽器到 **http://localhost:5173** 即可開始刷題。
+
+| 服務 | 位址 | 備註 |
+|------|------|------|
+| PostgreSQL | `localhost:5433` | docker compose |
+| 後端 API | `localhost:8080` | 本 repo；migration 自動跑 |
+| 前端 Web | `localhost:5173` | Vite dev server |
+
+前端預設呼叫 `http://localhost:8080/api/v1`；後端 `CORS_ORIGINS` 預設已含 `http://localhost:5173`，開箱即通。前端細節見 [QuizForge_Frontend/README.md](../QuizForge_Frontend/README.md)。
+
+**常見問題**：前端列表空 → 漏跑 T2 seed；CORS error → 後端未帶含 `CORS_ORIGINS` 的 `.env` 啟動；DB 連不上 → 等 `docker compose ps` 的 `db` 變 `healthy` 再跑 server；後端 build 失敗 → 確認 Go **1.25+**。
 
 ## API 端點摘要
 
